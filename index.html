@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bolblar Agent — Video generation on autopilot</title>
+  <meta name="description" content="Bolblar Agent turns a brief into finished, on-brand videos — scripting, generation, editing and publishing, fully automated.">
+  <meta property="og:title" content="Bolblar Agent — Video generation on autopilot">
+  <meta property="og:description" content="Turn a brief into finished, on-brand videos. Script, generate, edit and publish — automatically.">
+  <meta name="theme-color" content="#0b0b12">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="top">
+    <div class="container nav__inner">
+      <a class="brand" href="#top" aria-label="Bolblar Agent home">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="url(#g)"/><path d="M12 10.5v11l9.5-5.5z" fill="#fff"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
+        <span>Bolblar<span class="brand__sub">Agent</span></span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav__cta">
+        <a class="btn btn--ghost" href="#signup">Sign in</a>
+        <a class="btn btn--primary" href="#signup">Start free</a>
+      </div>
+      <button class="nav__toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#use-cases">Use cases</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn--primary" href="#signup">Start free</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <div class="hero__copy">
+          <span class="pill"><span class="pill__dot"></span> AI video agent · now in early access</span>
+          <h1>Video production,<br><span class="grad">on autopilot.</span></h1>
+          <p class="lead">Bolblar Agent turns a one-line brief into finished, on-brand videos. It writes the script, generates every scene, adds voice and captions, edits it all together — and publishes on schedule.</p>
+          <form class="signup" id="signup" novalidate>
+            <label class="sr-only" for="email">Work email</label>
+            <input id="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+            <button class="btn btn--primary btn--lg" type="submit">Get early access</button>
+            <p class="signup__msg" role="status" aria-live="polite"></p>
+          </form>
+          <ul class="hero__ticks">
+            <li>No credit card required</li>
+            <li>First 10 videos free</li>
+            <li>Cancel anytime</li>
+          </ul>
+        </div>
+
+        <!-- Agent console mock -->
+        <div class="console" aria-label="Example of Bolblar Agent producing a video">
+          <div class="console__bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="console__title">bolblar-agent · new run</span>
+          </div>
+          <div class="console__body">
+            <div class="brief">
+              <span class="brief__label">Brief</span>
+              <p>“Make 5 vertical product teasers for our new running shoe. Upbeat, 20s each, post one daily on TikTok &amp; Reels.”</p>
+            </div>
+            <ol class="steps" id="steps">
+              <li data-step><span class="steps__icon"></span><span>Writing scripts &amp; hooks</span><em>5 scripts</em></li>
+              <li data-step><span class="steps__icon"></span><span>Storyboarding scenes</span><em>32 shots</em></li>
+              <li data-step><span class="steps__icon"></span><span>Generating video clips</span><em>1080×1920</em></li>
+              <li data-step><span class="steps__icon"></span><span>Voiceover, music &amp; captions</span><em>EN · ES</em></li>
+              <li data-step><span class="steps__icon"></span><span>Editing &amp; brand check</span><em>passed</em></li>
+              <li data-step><span class="steps__icon"></span><span>Scheduling to channels</span><em>Mon–Fri</em></li>
+            </ol>
+            <div class="reel" aria-hidden="true">
+              <div class="reel__frame f1"><span>0:20</span></div>
+              <div class="reel__frame f2"><span>0:19</span></div>
+              <div class="reel__frame f3"><span>0:20</span></div>
+              <div class="reel__frame f4"><span>0:18</span></div>
+              <div class="reel__frame f5"><span>0:20</span></div>
+            </div>
+            <div class="progress"><div class="progress__bar" id="progress"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRATIONS STRIP -->
+    <section class="strip" aria-label="Publishes to">
+      <div class="container strip__inner">
+        <span class="strip__label">Publishes straight to</span>
+        <ul class="strip__list">
+          <li>YouTube</li><li>TikTok</li><li>Instagram</li><li>LinkedIn</li><li>X</li><li>Google Drive</li><li>Slack</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+      <div class="container">
+        <header class="section__head">
+          <span class="eyebrow">How it works</span>
+          <h2>From brief to published in three steps</h2>
+          <p>Tell the agent what you need. It plans, produces and ships — and asks for your approval only where you want it to.</p>
+        </header>
+        <div class="how">
+          <article class="how__card">
+            <span class="how__num">01</span>
+            <h3>Describe the goal</h3>
+            <p>Type a brief, paste a product URL, or drop in a doc. Set length, format, tone, language and how many variations you want.</p>
+          </article>
+          <article class="how__card">
+            <span class="how__num">02</span>
+            <h3>The agent produces</h3>
+            <p>Bolblar scripts, storyboards, generates footage, records voiceover, adds music and captions, then edits to your brand kit.</p>
+          </article>
+          <article class="how__card">
+            <span class="how__num">03</span>
+            <h3>Review &amp; publish</h3>
+            <p>Approve in one click or let it run hands-free. Videos are exported in every aspect ratio and posted on your schedule.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section section--alt" id="features">
+      <div class="container">
+        <header class="section__head">
+          <span class="eyebrow">Features</span>
+          <h2>A full production team, in one agent</h2>
+          <p>Everything between “we need a video” and “it’s live” — automated end to end.</p>
+        </header>
+        <div class="features">
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10M4 20h7"/></svg></div>
+            <h3>Script &amp; storyboard</h3>
+            <p>Hook-first scripts and shot lists tuned for each platform’s length and pacing.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="m17 10 4-2v8l-4-2"/></svg></div>
+            <h3>Multi-model generation</h3>
+            <p>Routes every shot to the best video, image and voice model for the job — automatically.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18M3 12h18"/></svg></div>
+            <h3>Voice &amp; 30+ languages</h3>
+            <p>Natural voiceover, cloned brand voices, auto-captions and one-click localization.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4 3.5 7 8 8 4.5-1 8-4 8-8V7z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <h3>Brand kit guardrails</h3>
+            <p>Logos, fonts, colors, intros and do-not-say lists applied and checked on every render.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+            <h3>Schedules &amp; triggers</h3>
+            <p>Run daily, weekly, or whenever a new product, blog post or row in a sheet appears.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg></div>
+            <h3>Learns what performs</h3>
+            <p>Pulls views and retention back in, then steers the next batch toward what works.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="9" height="12" rx="1.5"/><rect x="13" y="8" width="9" height="8" rx="1.5"/></svg></div>
+            <h3>Every format at once</h3>
+            <p>9:16, 1:1, 16:9 and 4:5 cuts from a single run — reframed, not just cropped.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><path d="M8 9h8M8 13h5"/><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></div>
+            <h3>Approvals &amp; teams</h3>
+            <p>Comment on frames, request changes in plain English, and set who signs off on what.</p>
+          </article>
+          <article class="feature">
+            <div class="feature__icon"><svg viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></svg></div>
+            <h3>API &amp; webhooks</h3>
+            <p>Kick off runs from your own stack and get the finished files delivered where you need them.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- USE CASES -->
+    <section class="section" id="use-cases">
+      <div class="container">
+        <header class="section__head">
+          <span class="eyebrow">Use cases</span>
+          <h2>Built for teams that need a lot of video</h2>
+        </header>
+        <div class="tabs" role="tablist" aria-label="Use cases">
+          <button role="tab" aria-selected="true" aria-controls="uc-social" id="t-social">Social media</button>
+          <button role="tab" aria-selected="false" aria-controls="uc-ecom" id="t-ecom" tabindex="-1">E‑commerce</button>
+          <button role="tab" aria-selected="false" aria-controls="uc-ads" id="t-ads" tabindex="-1">Performance ads</button>
+          <button role="tab" aria-selected="false" aria-controls="uc-edu" id="t-edu" tabindex="-1">Training &amp; explainers</button>
+        </div>
+        <div class="panel" role="tabpanel" id="uc-social" aria-labelledby="t-social">
+          <div><h3>A daily posting cadence without a daily grind</h3><p>Keep TikTok, Reels and Shorts fed with fresh, on-trend clips. The agent plans a content calendar, produces each post, and publishes at the best time for your audience.</p></div>
+          <ul class="checks"><li>Content calendar from a single prompt</li><li>Trend-aware hooks and music</li><li>Auto-posting to every channel</li></ul>
+        </div>
+        <div class="panel" role="tabpanel" id="uc-ecom" aria-labelledby="t-ecom" hidden>
+          <div><h3>A video for every product in your catalog</h3><p>Connect your store and Bolblar creates product videos from your listings and photos — then updates them when prices or stock change.</p></div>
+          <ul class="checks"><li>Shopify &amp; CSV catalog sync</li><li>Product-page and social cuts</li><li>Auto-refresh on catalog changes</li></ul>
+        </div>
+        <div class="panel" role="tabpanel" id="uc-ads" aria-labelledby="t-ads" hidden>
+          <div><h3>Test 50 creatives instead of 5</h3><p>Generate dozens of ad variations — hooks, voices, offers, formats — and let performance data decide which direction the next batch takes.</p></div>
+          <ul class="checks"><li>Variation matrices in one run</li><li>UGC-style and polished styles</li><li>Feedback loop from ad results</li></ul>
+        </div>
+        <div class="panel" role="tabpanel" id="uc-edu" aria-labelledby="t-edu" hidden>
+          <div><h3>Turn docs into videos people actually watch</h3><p>Feed in onboarding guides, release notes or SOPs. Get clear, narrated explainers in every language your team speaks.</p></div>
+          <ul class="checks"><li>Docs, slides &amp; URLs as input</li><li>Narration in 30+ languages</li><li>Re-render when the source changes</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section section--alt" id="pricing">
+      <div class="container">
+        <header class="section__head">
+          <span class="eyebrow">Pricing</span>
+          <h2>Simple plans that scale with your output</h2>
+          <div class="billing" role="group" aria-label="Billing period">
+            <button class="is-active" data-billing="monthly" aria-pressed="true">Monthly</button>
+            <button data-billing="yearly" aria-pressed="false">Yearly <span class="save">−20%</span></button>
+          </div>
+        </header>
+        <div class="plans">
+          <article class="plan">
+            <h3>Starter</h3>
+            <p class="plan__desc">For creators getting started.</p>
+            <p class="plan__price"><span class="amt" data-monthly="29" data-yearly="23">$29</span><span>/mo</span></p>
+            <ul class="checks"><li>30 videos / month</li><li>Up to 1080p</li><li>3 connected channels</li><li>Basic brand kit</li></ul>
+            <a class="btn btn--ghost btn--block" href="#signup">Start free</a>
+          </article>
+          <article class="plan plan--featured">
+            <span class="plan__badge">Most popular</span>
+            <h3>Pro</h3>
+            <p class="plan__desc">For brands publishing every day.</p>
+            <p class="plan__price"><span class="amt" data-monthly="99" data-yearly="79">$99</span><span>/mo</span></p>
+            <ul class="checks"><li>150 videos / month</li><li>Up to 4K export</li><li>Unlimited channels</li><li>Custom voices &amp; brand kit</li><li>Schedules &amp; triggers</li></ul>
+            <a class="btn btn--primary btn--block" href="#signup">Start free</a>
+          </article>
+          <article class="plan">
+            <h3>Scale</h3>
+            <p class="plan__desc">For agencies and large teams.</p>
+            <p class="plan__price"><span class="amt amt--text">Custom</span></p>
+            <ul class="checks"><li>Volume pricing</li><li>API &amp; webhooks</li><li>SSO &amp; approval workflows</li><li>Dedicated support</li></ul>
+            <a class="btn btn--ghost btn--block" href="mailto:sales@bolblar.com">Talk to sales</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container container--narrow">
+        <header class="section__head">
+          <span class="eyebrow">FAQ</span>
+          <h2>Questions, answered</h2>
+        </header>
+        <div class="faq">
+          <details>
+            <summary>What exactly does Bolblar Agent automate?</summary>
+            <p>The whole pipeline: scripting, storyboarding, generating footage, voiceover, music, captions, editing, brand checks, exporting in every aspect ratio and publishing. You can add approval steps anywhere you want a human in the loop.</p>
+          </details>
+          <details>
+            <summary>Do I own the videos it creates?</summary>
+            <p>Yes. Everything you generate is yours to use commercially, on any channel.</p>
+          </details>
+          <details>
+            <summary>Can it use my own footage, logos and voice?</summary>
+            <p>Yes. Upload a brand kit and existing clips and the agent will mix them with generated shots. On Pro and above you can also create a custom brand voice.</p>
+          </details>
+          <details>
+            <summary>Which platforms can it publish to?</summary>
+            <p>YouTube, TikTok, Instagram, LinkedIn and X out of the box, plus delivery to Google Drive, Slack or any destination via webhook.</p>
+          </details>
+          <details>
+            <summary>What happens if I don’t like a result?</summary>
+            <p>Tell the agent what to change in plain English — “faster pacing”, “swap the second scene”, “warmer voice” — and it re-renders just the parts that need it.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="cta">
+      <div class="container cta__inner">
+        <h2>Your next 100 videos, without the production bottleneck.</h2>
+        <p>Join early access and get your first 10 videos free.</p>
+        <a class="btn btn--light btn--lg" href="#signup">Get early access</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <a class="brand" href="#top" aria-label="Bolblar Agent home">
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="url(#g2)"/><path d="M12 10.5v11l9.5-5.5z" fill="#fff"/><defs><linearGradient id="g2" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs></svg>
+        <span>Bolblar<span class="brand__sub">Agent</span></span>
+      </a>
+      <nav class="footer__links" aria-label="Footer">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </nav>
+      <p class="footer__copy">© <span id="year">2026</span> Bolblar. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/main.js" defer></script>
+</body>
+</html>
