@@ -1,0 +1,13 @@
+{
+  "name": "bolblar-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:dev": "node build.mjs --no-minify"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "jszip": "^3.10.1"
+  }
+}

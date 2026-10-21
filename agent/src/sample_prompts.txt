@@ -1,0 +1,7 @@
+CHARACTER | Ade | the hero, Ade | Nigerian man in his late 20s, warm dark brown skin, short low cut black hair, light blue shirt with rolled sleeves, navy chinos
+PLACE | Ade's apartment | the apartment | small tidy one room apartment in Lagos, cream walls, wooden table by a window, green curtains, warm evening light
+Slide,Start,End,Narration,Overlay,Characters,Location,Prompt
+"1","00:00","00:04","Most people work forty years and still retire broke.","40 YEARS","","","Wide shot of a crowded bus stop at dawn, tired workers in a long queue"
+"2","00:04","00:08","Ade did everything right.","EVERYTHING RIGHT","Ade","Ade's apartment","Ade at the wooden table late at night surrounded by stacked files"
+"3","00:08","00:12","But one habit was quietly draining his money.","ONE HABIT","","","Close up of a phone full of small payment notifications, top down view"
+"4","00:12","00:17","Until he finally noticed.","","Ade","Ade's apartment","Ade staring at his phone in shock by the window"
