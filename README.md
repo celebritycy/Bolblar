@@ -10,8 +10,7 @@ python3 -m http.server 8000
 
 ## Add your files
 
-- `downloads/BolblarAgent-Setup.exe` — the agent installer the Download buttons link to.
-  If you host it elsewhere (e.g. GitHub Releases), change the two `href`s in `index.html`.
+- The Download buttons link to the extension's Google Drive folder; change the two `href`s in `index.html` to move it.
 - `assets/demo.mp4` — a video made by the agent (16:9, H.264 MP4 plays everywhere).
 - `assets/demo-poster.jpg` — optional thumbnail shown before the video plays.
 
