@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "Bolblar Agent",
+  "short_name": "Bolblar Agent",
+  "version": "1.0.0",
+  "description": "Create every visual for your video in Google Flow in one batch, with a locked hero, a locked style, and timestamped files ready to edit.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "downloads",
+    "tabs",
+    "scripting",
+    "sidePanel",
+    "debugger"
+  ],
+  "host_permissions": [
+    "https://labs.google/*",
+    "https://flow.google.com/*",
+    "https://*.googleusercontent.com/*",
+    "https://storage.googleapis.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://ewlbbynxdeneevlpxywo.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "panel/panel.html"
+  },
+  "action": {
+    "default_title": "Bolblar Agent",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://labs.google/*",
+        "https://flow.google.com/*"
+      ],
+      "js": [
+        "content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "panel/*",
+        "lib/*",
+        "icons/*"
+      ],
+      "matches": [
+        "https://labs.google/*",
+        "https://flow.google.com/*"
+      ]
+    }
+  ]
+}

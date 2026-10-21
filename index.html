@@ -55,6 +55,7 @@
     .videos h2 { font-size: clamp(24px, 4vw, 32px); margin: 0 0 6px; }
     .videos h2 span { color: var(--yellow); }
     .videos > p { color: var(--muted); margin: 0 0 24px; }
+    .videos h2 + .grid { margin-top: 20px; }
     .grid { display: grid; gap: 24px; }
     .card {
       margin: 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--border);
@@ -84,6 +85,17 @@
       Download Bolblar Agent
     </a>
     <p class="note">Browser extension · opens Google Drive</p>
+
+    <section class="videos">
+      <h2>How <span>Bolblar Agent</span> works</h2>
+      <div class="grid">
+        <figure class="card">
+          <video controls playsinline preload="none" poster="assets/videos/video-4.jpg" style="aspect-ratio: 16 / 10">
+            <source src="assets/videos/video-4.mp4" type="video/mp4">
+          </video>
+        </figure>
+      </div>
+    </section>
 
     <section class="videos">
       <h2>Videos created by <span>Bolblar Agent</span></h2>
