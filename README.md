@@ -10,7 +10,7 @@ python3 -m http.server 8000
 
 ## Add your files
 
-- The Download buttons link to the extension's Google Drive file; change the two `href`s in `index.html` to move it.
+- The Download buttons link to the Bolblar Telegram group; change the two `href`s in `index.html` to move it.
 - Videos made by the agent live in `assets/videos/` (`video-1.mp4` + `video-1.jpg` thumbnail, and so on).
   To add one, upload it there and copy a `<figure class="card">` block in `index.html`.
   Convert phone/`.MOV` recordings to H.264 MP4 so every browser can play them:
