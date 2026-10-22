@@ -83,16 +83,60 @@
 
   <div class="gStep" data-step="3" hidden>
     <h2>Main character</h2>
-    <p class="note">One main character is locked into every scene they appear in. Pick who it is.</p>
-    <div class="chipset" id="gHeroes"></div>
+    <p class="note">Who is the main character of this video? Everyone else in the story is kept consistent too.</p>
+    <div class="gPick" id="gPick">
+      <button class="gOpt" data-pick="channel"><b>My channel's character</b><span>Use a picture of the character you always use. Saved for every video.</span></button>
+      <button class="gOpt" data-pick="story"><b>Someone from this story</b><span id="gStoryHint">Load your AI reply in step 1 to see the people in your story.</span></button>
+      <button class="gOpt" data-pick="none"><b>No main character</b><span>Every person is still kept consistent automatically.</span></button>
+    </div>
+
+    <div class="card gBox" id="gChannelBox" hidden>
+      <div class="gChars" id="gChars"></div>
+      <div class="gAdd" id="gAdd">
+        <b id="gAddTitle">Add your character</b>
+        <p class="note">One clear, full body picture on a plain background works best.</p>
+        <div class="gAddRow"><label class="gAddPic" id="gAddPicBox"><img id="gAddPic" alt="" hidden><span id="gAddPicTxt">Choose picture</span><input id="gChFile" type="file" accept="image/*" hidden></label>
+          <input id="gChName" type="text" maxlength="40" placeholder="Their name, like Coach Steve" aria-label="Character name"></div>
+        <button id="gChSave" class="btn primary wide" disabled>Save character</button>
+      </div>
+      <div id="gChUse" hidden>
+        <label class="note" for="gPlays">Who do they play in this story?</label>
+        <select id="gPlays"></select>
+        <p class="gLabel">Art style</p>
+        <div class="chipset" id="gChStyle"></div>
+        <div id="gChDescribe" hidden>
+          <p class="note">So slides without your character match too, describe your style once: tap Copy, paste it into ChatGPT, Gemini or Claude <b>and attach the same picture there</b>, then paste the reply here.</p>
+          <button id="gChCopy" class="btn wide">Copy style prompt</button>
+          <textarea id="gChReply" rows="3" placeholder="Paste the AI reply"></textarea>
+        </div>
+        <p class="gOk" id="gChOk"></p>
+      </div>
+    </div>
+
+    <div class="card gBox" id="gStoryBox" hidden>
+      <div class="gPeople" id="gPeople"></div>
+      <button id="gPeopleAll" class="linkBtn" hidden>Show everyone</button>
+    </div>
+
+    <details class="gMore" id="gMore">
+      <summary>More options</summary>
+      <p class="note">Ready made characters, or describe your own.</p>
+      <div class="chipset" id="gHeroes"></div>
+    </details>
+
     <div id="gHeroBox" hidden>
-      <textarea id="gSpec" rows="5" placeholder="Name, age and build. Skin tone (same in every light). Hair: length, colour, parting. Outfit layer by layer with colours. ONE identity marker, like a red scarf."></textarea>
-      <p class="note">Strong descriptions name the character, give one exact skin tone, exact hair, the outfit layer by layer with colours, and one identity marker.</p>
-      <div class="gRefRow" id="gRefRow" hidden><img id="gRefImg" alt="Locked character picture"><span>Locked in. This picture goes into every slide with this character.</span></div>
+      <p class="gSum" id="gSpecSum"></p>
+      <details id="gSpecEdit"><summary>Edit description</summary>
+        <textarea id="gSpec" rows="5" placeholder="Name, age and build. Skin tone (same in every light). Hair: length, colour, parting. Outfit layer by layer with colours. ONE identity marker, like a red scarf."></textarea>
+        <p class="note">Strong descriptions name the character, give one exact skin tone, exact hair, the outfit layer by layer with colours, and one identity marker.</p>
+      </details>
+      <div class="gRefRow" id="gRefRow" hidden><img id="gRefImg" alt="Locked character picture"><span id="gRefTxt">Locked in. This picture goes into every slide with this character.</span></div>
       <label class="btn wide gFile">Upload a picture of this character<input id="gCharFile" type="file" accept="image/*" hidden></label>
-      <button id="gSheet" class="btn wide">Make a character sheet in Flow</button>
-      <p class="note">Makes 3 poses on a plain grey background in your Flow tab. Tap the best one to lock it in.</p>
-      <div class="gSheets" id="gSheets"></div>
+      <div id="gSheetBox">
+        <button id="gSheet" class="btn wide">Make a character sheet in Flow</button>
+        <p class="note">Makes 3 poses on a plain grey background in your Flow tab, in the style from step 2. Tap the best one to lock it in.</p>
+        <div class="gSheets" id="gSheets"></div>
+      </div>
     </div>
   </div>
 

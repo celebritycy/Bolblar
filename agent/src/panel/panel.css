@@ -280,3 +280,31 @@ body.guided .tabs, body.guided main { display: none; }
 #newVideo2 { margin-top: 8px; }
 .brand span, .pill span, .newBtn { white-space: nowrap; }
 @media (max-width: 370px) { .brand span { display: none; } }
+
+/* Step 3: main character */
+.gPick { display: grid; gap: 8px; margin: 10px 0; }
+.gOpt { text-align: left; border: 1px solid var(--line); background: var(--card); color: inherit; border-radius: 12px; padding: 10px 12px; cursor: pointer; font: inherit; }
+.gOpt b { display: block; font-size: 14px; }
+.gOpt span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.gOpt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.gOpt[aria-pressed="true"] b { color: var(--accent); }
+.gBox { margin-bottom: 10px; }
+.gChars { display: grid; gap: 8px; }
+.gChar { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 6px; background: var(--bg); color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.gChar img { width: 46px; height: 46px; object-fit: cover; border-radius: 8px; }
+.gChar b { flex: 1; } .gChar[aria-pressed="true"] { border-color: var(--accent); } .gChar[aria-pressed="true"] b { color: var(--accent); }
+.gChar .del { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px 8px; }
+.gAdd { margin-top: 10px; } .gAddRow { display: flex; gap: 8px; align-items: center; margin: 6px 0 8px; }
+.gAddPic { width: 64px; height: 64px; flex: none; border: 1px dashed var(--line); border-radius: 10px; display: grid; place-items: center; font-size: 11px; color: var(--muted); cursor: pointer; overflow: hidden; text-align: center; }
+.gAddPic img { width: 100%; height: 100%; object-fit: cover; }
+.gAddRow input[type=text] { flex: 1; min-width: 0; }
+#gPlays { width: 100%; margin: 4px 0 6px; }
+.gLabel { font-weight: 700; font-size: 12px; margin: 8px 0 4px; }
+.gPeople { display: grid; gap: 6px; }
+.gPerson { display: flex; justify-content: space-between; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--bg); color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.gPerson em { font-style: normal; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.gPerson i { font-style: normal; color: var(--accent); font-size: 11px; font-weight: 700; margin-left: 6px; }
+.gPerson[aria-pressed="true"] { border-color: var(--accent); } .gPerson[aria-pressed="true"] b { color: var(--accent); }
+.gMore { margin: 4px 0 10px; } .gMore summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 4px 0; }
+.gSum { font-size: 12px; color: var(--muted); margin: 6px 0; }
+#gSpecEdit summary { cursor: pointer; font-size: 12px; text-decoration: underline; color: var(--muted); margin-bottom: 6px; }

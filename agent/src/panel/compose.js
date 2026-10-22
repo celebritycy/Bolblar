@@ -23,6 +23,7 @@ function bbMentionsHero(prompt, cfg) {
   if (cfg.hero.lockMode === 'off') return false;
   const words = ['hero', 'protagonist', 'main character', 'narrator'];
   if (cfg.hero.name) words.push(cfg.hero.name.toLowerCase());
+  if (cfg.hero.label) words.push(cfg.hero.label.toLowerCase());
   const p = prompt.toLowerCase();
   return words.some((w) => w && p.includes(w));
 }
@@ -55,15 +56,29 @@ function bbScene(slide) {
   return bbSafeScene(slide.prompt, slide.safe);
 }
 
+// The main character's lock. With your own picture, the picture is the only source of their look:
+// no written description is sent, so nothing in the prompt can argue with the picture.
+function bbHeroLock(cfg) {
+  const h = cfg.hero;
+  if (h.imageOnly && h.refImage && h.attach !== 'off') {
+    const keep = bbKeepsHeroStyle(cfg);
+    const who = h.label && h.name && h.label.toLowerCase() !== h.name.toLowerCase() ? `${h.label} (called ${h.name} in this story)` : (h.label || h.name || 'the main character');
+    return `[HERO LOCK: ${who}. Copy the character in the attached reference image exactly: same face, head and body proportions, skin tone, hair, outfit and colors${keep ? ', drawn in the same art style as that image' : ''}. ${keep ? 'Do not redesign, age or restyle them' : 'Do not redesign or age them; only redraw them in the art style of this image'}.]`;
+  }
+  const ref = h.attach !== 'off' && h.refImage ? 'Match the hero shown in the attached reference image exactly. ' : '';
+  return `[HERO LOCK: ${ref}${h.spec}]`;
+}
+// True when the video uses your character's own art style (not a preset that redraws them).
+function bbKeepsHeroStyle(cfg) {
+  const id = cfg.style.id;
+  return id === 'matched' || (!!cfg.hero.styleId && id === cfg.hero.styleId);
+}
+
 function bbCompose(slide, cfg) {
   const style = bbStyle(cfg);
   const blocks = [];
   if (cfg.style.enforce && style.prefix) blocks.push(`[${style.prefix}]`);
-  if (cfg.hero.spec && (slide.safe || 0) < 2 && bbMentionsHero(slide.prompt, cfg)) {
-    const ref = cfg.hero.attach !== 'off' && cfg.hero.refImage
-      ? 'Match the hero shown in the attached reference image exactly. ' : '';
-    blocks.push(`[HERO LOCK: ${ref}${cfg.hero.spec}]`);
-  }
+  if (cfg.hero.spec && (slide.safe || 0) < 2 && bbMentionsHero(slide.prompt, cfg)) blocks.push(bbHeroLock(cfg));
   if ((slide.safe || 0) < 2) blocks.push(...bbCastLock(slide, cfg));
   if (slide.light) blocks.push(`[TIME AND LIGHT: ${slide.light}. Same time of day, weather and lighting as the other shots of this moment.]`);
   blocks.push(`SCENE: ${bbSanitize(bbScene(slide), style)}`);

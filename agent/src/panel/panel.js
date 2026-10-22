@@ -27,7 +27,7 @@ const DEFAULTS = {
   anim: { level: 'light' },
   auto: { on: true },
   ui: { mode: 'guide', step: 1 },
-  myStyles: [], ownDraft: [],
+  myStyles: [], ownDraft: [], channel: { chars: [] },
   flow: { model: '', ratio: '', count: 0 }
 };
 let S = structuredClone(DEFAULTS);
@@ -51,6 +51,7 @@ async function load() {
   if (!S.mother.paced) { if (S.mother.min === 3 && S.mother.max === 6) Object.assign(S.mother, { min: 5, max: 8 }); S.mother.paced = true; }
   // "Needs a home" is gone: slides that waited there count as skipped, so Redo or Retry brings them back.
   (S.slides || []).forEach((x) => { if (x.status === 'review') { x.status = 'skipped'; x.error = 'Skipped. Tap Redo to make it again.'; } });
+  if (!S.channel || !Array.isArray(S.channel.chars)) S.channel = { chars: [] };
   // Pacing is one exact number of seconds per image now (1 to 12), not a range.
   if (!S.mother.exact) {
     const was = +S.mother.min === 5 && +S.mother.max === 8 ? 6 : Math.round(((+S.mother.min || 5) + (+S.mother.max || 8)) / 2);
@@ -628,7 +629,7 @@ function wantedRefs(job) {
   if (job.kind === 'sheet' || (job.safe || 0) >= 2) return [];
   const refs = [];
   // The channel character's picture goes only into slides that are about them, never into every slide.
-  if (S.hero.attach !== 'off' && S.hero.refImage && bbMentionsHero(job.prompt, S)) refs.push(['hero', S.hero.refImage, S.hero.name || 'hero']);
+  if (S.hero.attach !== 'off' && S.hero.refImage && bbMentionsHero(job.prompt, S)) refs.push(['hero', S.hero.refImage, S.hero.label || S.hero.name || 'hero']);
   // Your own style: the 1 or 2 starred example images go into every slide.
   // Your own style's example images are NOT sent to Flow: Flow redraws attached pictures instead of only borrowing
   // their look. The style travels as the written description your AI made from them.
@@ -1262,6 +1263,115 @@ const G_STEPS = 5;
 function guided() { return true; } // one view only
 function gGo(step) { S.ui.step = Math.min(G_STEPS, Math.max(1, step)); save(); renderGuide(); document.getElementById('guide').scrollIntoView({ block: 'start' }); }
 function gStyleList() { return [...(S.myStyles || []).map((s) => ({ ...s, mine: true })), ...BB_STYLES.filter((s) => s.id !== 'custom' && s.id !== 'matched')]; }
+// ---------- step 3: main character ----------
+function storyPeople() {
+  const people = S.cast.filter((m) => m.type === 'character' && m.look);
+  const n = new Map(people.map((m) => [m, 0]));
+  for (const sl of S.slides) for (const m of bbSlideCast(sl, S.cast).chars) if (n.has(m)) n.set(m, n.get(m) + 1);
+  return people.map((m) => ({ m, n: n.get(m) })).sort((a, b) => b.n - a.n);
+}
+function heroMode() {
+  const p = S.hero.presetId || 'none';
+  if (p.startsWith('channel:')) return 'channel';
+  if (!S.hero.spec.trim() && p !== 'own') return 'none';
+  return p.startsWith('cast:') ? 'story' : 'more';
+}
+const channelChar = () => (S.channel.chars || []).find((c) => 'channel:' + c.id === S.hero.presetId);
+function defaultPlays(c) {
+  if (!S.slides.length) return '';
+  const lc = c.name.toLowerCase();
+  if (S.slides.some((x) => (x.prompt || '').toLowerCase().includes(lc))) return ''; // the shot list already uses their name
+  const top = storyPeople()[0];
+  return top && top.n ? top.m.name : '';
+}
+function setPlays(c, plays) {
+  Object.assign(S.hero, { plays: plays || '', name: plays || c.name, playsFor: S.batchId + ':' + S.slides.length });
+}
+const presetStyle = () => S.style.lastPreset && BB_STYLES.some((x) => x.id === S.style.lastPreset) ? S.style.lastPreset : (BB_STYLES.some((x) => x.id === S.style.id) && S.style.id !== 'matched' ? S.style.id : BB_STYLES[0].id);
+function keepCharStyle(c) {
+  if (BB_STYLES.some((x) => x.id === S.style.id) && S.style.id !== 'matched') S.style.lastPreset = S.style.id;
+  const mine = c.styleId && (S.myStyles || []).some((x) => x.id === c.styleId);
+  Object.assign(S.style, { id: mine ? c.styleId : 'matched', prefix: null, suffix: null });
+}
+function useChannelChar(c, keepStyle = true) {
+  Object.assign(S.hero, { presetId: 'channel:' + c.id, label: c.name, spec: `${c.name} (from your picture)`, refImage: c.img, refFrom: 'channel',
+    attach: 'every', imageOnly: true, styleId: c.styleId || '', chosen: true });
+  setPlays(c, defaultPlays(c));
+  S.channel.lastId = c.id;
+  if (keepStyle) keepCharStyle(c);
+}
+function useStoryPerson(m, chosen = true) {
+  Object.assign(S.hero, { presetId: 'cast:' + m.id, name: m.name, label: '', plays: '', spec: `${m.name}: ${m.look}`, refImage: m.refImage || '',
+    refFrom: m.refImage ? 'sheet' : '', imageOnly: false, styleId: '', chosen });
+}
+function clearHero(chosen = true) {
+  Object.assign(S.hero, { presetId: 'none', spec: '', name: '', label: '', plays: '', refImage: '', attach: 'off', imageOnly: false, styleId: '', chosen });
+}
+function renderMain() {
+  const chars = S.channel.chars || [];
+  // First visit with nothing picked: suggest the saved channel character, or the person in the most slides.
+  if (!S.hero.chosen && heroMode() === 'none') {
+    const last = chars.find((c) => c.id === S.channel.lastId) || chars[0];
+    const top = storyPeople()[0];
+    if (last) { useChannelChar(last); S.hero.chosen = false; save(); }
+    else if (top && top.n) { useStoryPerson(top.m, false); save(); }
+  }
+  const mode = heroMode();
+  const pick = R.pick || mode;
+  document.querySelectorAll('#gPick [data-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pick === mode)));
+  const people = storyPeople();
+  $('gStoryHint').textContent = people.length ? `${people.length} ${people.length === 1 ? 'person' : 'people'} in your story. The one in the most slides is suggested.` : 'Load your AI reply in step 1 to see the people in your story.';
+  // My channel's character
+  const c = channelChar();
+  $('gChannelBox').hidden = pick !== 'channel';
+  $('gChars').innerHTML = chars.map((x) => `<div class="gChar" role="button" tabindex="0" data-ch="${esc(x.id)}" aria-pressed="${!!c && c.id === x.id}"><img src="${x.img}" alt=""><b>${esc(x.name)}</b><button class="del" data-chdel="${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button></div>`).join('')
+    + (chars.length && !R.addOpen ? '<button class="linkBtn" data-chadd="1">+ Add another character</button>' : '');
+  $('gAdd').hidden = !!chars.length && !R.addOpen;
+  $('gAddTitle').textContent = chars.length ? 'Add another character' : 'Add your character';
+  $('gAddPic').hidden = !R.chPic; if (R.chPic) $('gAddPic').src = R.chPic; $('gAddPicTxt').hidden = !!R.chPic;
+  $('gChSave').disabled = !R.chPic || !$('gChName').value.trim();
+  $('gChUse').hidden = !c;
+  if (c) {
+    if (S.slides.length && S.hero.playsFor !== S.batchId + ':' + S.slides.length) { setPlays(c, defaultPlays(c)); save(); }
+    $('gPlays').innerHTML = `<option value="">${esc(c.name)} is the main character${S.slides.length ? '' : ' (named so in your shot list)'}</option>` +
+      people.map((p) => `<option value="${esc(p.m.name)}" ${S.hero.plays === p.m.name ? 'selected' : ''}>${esc(p.m.name)} (${p.n} slide${p.n === 1 ? '' : 's'})</option>`).join('');
+    $('gPlays').disabled = !people.length;
+    const keep = bbKeepsHeroStyle(S);
+    const preset = BB_STYLES.find((x) => x.id === presetStyle());
+    $('gChStyle').innerHTML = `<button class="chip" data-chstyle="keep" aria-pressed="${keep}">Keep ${esc(c.name)}'s own style ★</button><button class="chip" data-chstyle="redraw" aria-pressed="${!keep}">Redraw in ${esc(preset ? preset.label : 'a preset')}</button>`;
+    const described = keep && S.style.id !== 'matched';
+    $('gChDescribe').hidden = !keep || described;
+    const st = bbStyle(S);
+    $('gChOk').classList.toggle('gWarn', keep && !described);
+    $('gChOk').textContent = !keep ? `${c.name} will be redrawn in ${preset ? preset.label : 'that style'}. Their face, outfit and colors still come from your picture.`
+      : described ? `Every slide uses "${st.label}", with or without ${c.name}. Their look comes only from your picture.`
+      : `Until you describe the style, slides without ${c.name} may look a little different.`;
+  }
+  // Someone from this story
+  $('gStoryBox').hidden = pick !== 'story';
+  const show = R.peopleAll ? people : people.slice(0, 4);
+  $('gPeople').innerHTML = show.map((p, i) => `<button class="gPerson" data-person="${esc(p.m.id)}" aria-pressed="${S.hero.presetId === 'cast:' + p.m.id}"><b>${esc(p.m.name)}${i === 0 && p.n ? '<i>★ suggested</i>' : ''}</b><em>${p.n} slide${p.n === 1 ? '' : 's'}</em></button>`).join('') || '<p class="note">No people found yet. Load your AI reply in step 1.</p>';
+  $('gPeopleAll').hidden = R.peopleAll || people.length <= 4;
+  // More options: ready made characters and describe my own
+  const pid = S.hero.presetId || 'none';
+  $('gHeroes').innerHTML = [
+    ...BB_HEROES.map((h) => `<button class="chip" data-hero="${esc(h.id)}" aria-pressed="${pid === h.id && !!S.hero.spec.trim()}">${esc(h.label)}</button>`),
+    `<button class="chip" data-hero="own" aria-pressed="${pid === 'own'}">Describe my own</button>`
+  ].join('');
+  if (mode === 'more' && !$('gMore').open) $('gMore').open = true;
+  // The description and picture of a story or ready made character
+  $('gHeroBox').hidden = !(mode === 'story' || mode === 'more') || (mode === 'story' && pick !== 'story');
+  if (document.activeElement !== $('gSpec')) $('gSpec').value = S.hero.spec;
+  $('gSpecSum').textContent = S.hero.imageOnly ? '' : S.hero.spec.length > 110 ? S.hero.spec.slice(0, 110) + '…' : S.hero.spec;
+  if (pid === 'own' && !S.hero.spec.trim()) $('gSpecEdit').open = true;
+  $('gRefRow').hidden = !S.hero.refImage || mode === 'channel'; if (S.hero.refImage) $('gRefImg').src = S.hero.refImage;
+  $('gRefTxt').textContent = S.hero.imageOnly ? 'Locked in. Your picture is now the only source of their look, so the description is not sent.' : 'Locked in. This picture goes into every slide with this character.';
+  $('gSheetBox').hidden = !!S.hero.imageOnly;
+  $('gSheet').disabled = !!S.sheetJob;
+  $('gSheet').textContent = S.sheetJob ? 'Making the sheet in Flow…' : S.sheets.length ? 'Make another sheet' : 'Make a character sheet in Flow';
+  $('gSheets').innerHTML = S.sheets.map((sh, i) => `<button data-sheet="${i}" aria-pressed="${!!S.hero.refImage && S.hero.refFrom === sh.key}" title="Use this one"><img src="${sh.thumb}" alt="Character sheet ${i + 1}"></button>`).join('');
+}
+
 function renderGuide() {
   document.body.classList.add('guided');
   $('guide').hidden = !guided();
@@ -1288,21 +1398,8 @@ function renderGuide() {
   $('gOwnSteps').hidden = !own.length;
   $('gOwnHint').hidden = !own.length;
   $('gOwnGrid').classList.add('noStar');
-  // 3. main character: someone from the story, a ready made one, your own, or none
-  const fromStory = S.cast.filter((m) => m.type === 'character' && m.look);
-  const pid = S.hero.presetId || 'none';
-  $('gHeroes').innerHTML = [
-    `<button class="chip" data-hero="none" aria-pressed="${!S.hero.spec.trim()}">No main character</button>`,
-    ...fromStory.map((m) => `<button class="chip" data-hero="cast:${esc(m.id)}" aria-pressed="${pid === 'cast:' + m.id && !!S.hero.spec.trim()}">${esc(m.name)}</button>`),
-    ...BB_HEROES.map((h) => `<button class="chip" data-hero="${esc(h.id)}" aria-pressed="${pid === h.id && !!S.hero.spec.trim()}">${esc(h.label)}</button>`),
-    `<button class="chip" data-hero="own" aria-pressed="${pid === 'own' && !!S.hero.spec.trim()}">Describe my own</button>`
-  ].join('');
-  $('gHeroBox').hidden = !S.hero.spec.trim() && pid !== 'own';
-  if (document.activeElement !== $('gSpec')) $('gSpec').value = S.hero.spec;
-  $('gRefRow').hidden = !S.hero.refImage; if (S.hero.refImage) $('gRefImg').src = S.hero.refImage;
-  $('gSheet').disabled = !!S.sheetJob;
-  $('gSheet').textContent = S.sheetJob ? 'Making the sheet in Flow…' : S.sheets.length ? 'Make another sheet' : 'Make a character sheet in Flow';
-  $('gSheets').innerHTML = S.sheets.map((sh, i) => `<button data-sheet="${i}" aria-pressed="${!!S.hero.refImage && S.hero.refFrom === sh.key}" title="Use this one"><img src="${sh.thumb}" alt="Character sheet ${i + 1}"></button>`).join('');
+  // 3. main character: my channel's character, someone from the story, or none (ready made ones under More options)
+  renderMain();
   // 4. voiceover and motion
   const vp = S.voParts || [];
   $('gVoOk').innerHTML = !S.voName ? '' : vp.length > 1
@@ -1390,20 +1487,86 @@ function bindGuide() {
   const loadReply = () => { const t = $('gReply').value; if (t.trim().length > 20 && ingest(t, false)) { log('AI reply loaded.'); renderGuide(); } };
   $('gReply').addEventListener('paste', () => setTimeout(loadReply, 60));
   $('gReply').addEventListener('change', loadReply);
-  $('gStyles').addEventListener('click', (e) => { const b = e.target.closest('[data-style]'); if (!b) return; Object.assign(S.style, { id: b.dataset.style, prefix: null, suffix: null }); save(); renderStyle(); renderGuide(); });
+  $('gStyles').addEventListener('click', (e) => { const b = e.target.closest('[data-style]'); if (!b) return; if (BB_STYLES.some((x) => x.id === b.dataset.style)) S.style.lastPreset = b.dataset.style; Object.assign(S.style, { id: b.dataset.style, prefix: null, suffix: null }); save(); renderStyle(); renderGuide(); });
+  $('gPick').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pick]'); if (!b) return;
+    const p = b.dataset.pick; R.pick = p;
+    if (p === 'none') clearHero();
+    else if (p === 'story') { const top = storyPeople()[0]; if (heroMode() !== 'story' && top) useStoryPerson(top.m); }
+    else if (p === 'channel') { const chars = S.channel.chars || []; const c = chars.find((x) => x.id === S.channel.lastId) || chars[0]; if (heroMode() !== 'channel' && c) { useChannelChar(c); toast(`Using ${c.name}, in ${c.name}'s own art style. Change it below if you want.`); } }
+    save(); renderStyle(); renderHero(); renderGuide();
+  });
+  $('gPeople').addEventListener('click', (e) => { const b = e.target.closest('[data-person]'); if (!b) return; const m = S.cast.find((x) => x.id === b.dataset.person); if (m) { useStoryPerson(m); R.pick = 'story'; save(); renderHero(); renderGuide(); } });
+  $('gPeopleAll').addEventListener('click', () => { R.peopleAll = true; renderGuide(); });
   $('gHeroes').addEventListener('click', (e) => {
     const b = e.target.closest('[data-hero]'); if (!b) return;
-    const id = b.dataset.hero;
-    if (id === 'none') Object.assign(S.hero, { presetId: 'none', spec: '', name: '', refImage: '', attach: 'off' });
-    else if (id === 'own') Object.assign(S.hero, { presetId: 'own', spec: '', name: '', refImage: '' });
-    else if (id.startsWith('cast:')) { const m = S.cast.find((x) => 'cast:' + x.id === id); if (m) Object.assign(S.hero, { presetId: id, name: m.name, spec: `${m.name}: ${m.look}`, refImage: m.refImage || '' }); }
-    else { const h = BB_HEROES.find((x) => x.id === id); if (h) Object.assign(S.hero, { presetId: id, name: h.name || '', spec: h.spec, refImage: '' }); }
+    const id = b.dataset.hero; R.pick = 'more';
+    const base = { label: '', plays: '', imageOnly: false, styleId: '', chosen: true };
+    if (id === 'own') Object.assign(S.hero, base, { presetId: 'own', spec: '', name: '', refImage: '' });
+    else { const h = BB_HEROES.find((x) => x.id === id); if (h) Object.assign(S.hero, base, { presetId: id, name: h.name || '', spec: h.spec, refImage: '' }); }
     save(); renderHero(); renderGuide();
-    if (id === 'own') $('gSpec').focus();
+    if (id === 'own') { $('gSpecEdit').open = true; $('gSpec').focus(); }
   });
+  // My channel's character: add, pick, remove, who they play, art style
+  $('gChFile').addEventListener('change', async (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; R.chPic = await compressImage(await blobToDataURL(f), 1024); renderGuide(); $('gChName').focus(); });
+  $('gChName').addEventListener('input', () => { $('gChSave').disabled = !R.chPic || !$('gChName').value.trim(); });
+  $('gChSave').addEventListener('click', () => {
+    const name = $('gChName').value.trim(); if (!R.chPic || !name) return;
+    const c = { id: 'ch' + uid(), name, img: R.chPic };
+    S.channel.chars = [...(S.channel.chars || []), c].slice(-8);
+    R.chPic = ''; R.addOpen = false; $('gChName').value = '';
+    useChannelChar(c); save(); renderStyle(); renderHero(); renderGuide();
+    toast(`${name} saved for every video. Their picture is the only source of their look.`);
+  });
+  $('gChars').addEventListener('click', (e) => {
+    if (e.target.closest('[data-chadd]')) { R.addOpen = true; renderGuide(); return; }
+    const del = e.target.closest('[data-chdel]');
+    if (del) {
+      const c = S.channel.chars.find((x) => x.id === del.dataset.chdel); if (!c || !confirm(`Remove ${c.name} from your saved characters?`)) return;
+      S.channel.chars = S.channel.chars.filter((x) => x !== c);
+      if (S.hero.presetId === 'channel:' + c.id) clearHero();
+      save(); renderHero(); renderGuide(); return;
+    }
+    const b = e.target.closest('[data-ch]'); if (!b) return;
+    const c = S.channel.chars.find((x) => x.id === b.dataset.ch); if (c) { useChannelChar(c); save(); renderStyle(); renderHero(); renderGuide(); }
+  });
+  $('gPlays').addEventListener('change', (e) => { const c = channelChar(); if (c) { setPlays(c, e.target.value); save(); renderGuide(); } });
+  $('gChStyle').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-chstyle]'); const c = channelChar(); if (!b || !c) return;
+    if (b.dataset.chstyle === 'keep') keepCharStyle(c);
+    else Object.assign(S.style, { id: presetStyle(), prefix: null, suffix: null });
+    save(); renderStyle(); renderGuide();
+  });
+  $('gChCopy').addEventListener('click', async () => {
+    const c = channelChar(); if (!c) return;
+    const text = `I am attaching a picture of ${c.name}, the main character of my channel. Describe ONLY the art style of this picture, so an image generator can draw any scene in exactly the same style, including scenes where ${c.name} is not in the picture. Cover: medium (2D, 3D, photo, painting...), line work, how shapes and proportions are drawn, colour palette, shading, lighting, texture and how backgrounds are drawn. Do NOT describe the character (no face, hair or clothes).
+
+Answer ONLY with these 4 lines, nothing else:
+NAME: a short name for this style, 2 to 4 words
+PREFIX: one sentence that starts every image prompt and describes the style precisely
+SUFFIX: one sentence that ends every image prompt and repeats the most important style rules
+AVOID: a short comma separated list of things that would break this style`;
+    try { await navigator.clipboard.writeText(text); toast(`Copied. Paste it into ChatGPT or Gemini, attach ${c.name}'s picture too, then paste the reply here.`); }
+    catch (e) { $('gChReply').value = text; toast('Copy blocked; the prompt is in the box below.'); }
+  });
+  const loadChStyle = () => {
+    const c = channelChar(); const t = $('gChReply').value; if (!c) return;
+    const get = (k) => ((t.match(new RegExp('^\\W*' + k + '\\W*:\\s*(.+)$', 'im')) || [])[1] || '').replace(/[*_`]+/g, '').trim();
+    const prefix = get('PREFIX'), suffix = get('SUFFIX');
+    if (!prefix) { if (t.trim().length > 20) toast('Could not find the PREFIX line in that reply.'); return; }
+    const st = { id: 'my-' + uid(), group: 'My styles', label: get('NAME') || `${c.name}'s style`, prefix, suffix, avoid: get('AVOID'), is2D: /\b2d\b|flat|cartoon|vector|line art|illustrat|doodle|stick/i.test(prefix), refs: [], channelOf: c.id };
+    S.myStyles = [st, ...(S.myStyles || []).filter((x) => x.channelOf !== c.id)].slice(0, 12);
+    c.styleId = st.id; S.hero.styleId = st.id;
+    Object.assign(S.style, { id: st.id, prefix: null, suffix: null }); if (st.avoid) S.style.avoid = st.avoid;
+    $('gChReply').value = ''; save(); renderStyle(); renderGuide();
+    toast(`"${st.label}" saved. Every slide now uses ${c.name}'s style.`);
+  };
+  $('gChReply').addEventListener('paste', () => setTimeout(loadChStyle, 60));
+  $('gChReply').addEventListener('change', loadChStyle);
   $('gSpec').addEventListener('input', (e) => {
     S.hero.spec = e.target.value;
     if (S.hero.presetId === 'own') { const m = e.target.value.match(/^\s*"?([A-Z][\w'-]+(?: [A-Z][\w'-]+)?)"?\s*[:,—-]/); S.hero.name = m ? m[1] : S.hero.name; }
+    if (S.hero.imageOnly) S.hero.label = S.hero.name;
     save();
   });
   // Own style: up to 10 example images, described by your AI, 1 or 2 attached in Flow.
@@ -1453,9 +1616,9 @@ AVOID: a short comma separated list of things that would break this style`;
   // Your own picture of the main character, locked in like a character sheet.
   $('gCharFile').addEventListener('change', async (e) => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    Object.assign(S.hero, { refImage: await compressImage(await blobToDataURL(f), 1024), refFrom: 'upload', attach: 'every' });
-    if (!S.hero.spec.trim()) { S.hero.presetId = 'own'; toast('Picture locked in. Now write their name and a short description in the box.'); $('gSpec').focus(); }
-    else toast('Locked in. This picture goes into every slide with this character.');
+    Object.assign(S.hero, { refImage: await compressImage(await blobToDataURL(f), 1024), refFrom: 'upload', attach: 'every', imageOnly: true, label: S.hero.name || '', chosen: true });
+    if (!S.hero.spec.trim()) { S.hero.presetId = 'own'; S.hero.spec = 'the main character (from your picture)'; toast('Picture locked in. Give them a name in Edit description so the agent knows which slides they are in.'); $('gSpecEdit').open = true; $('gSpec').focus(); }
+    else toast('Locked in. Your picture is now the only source of their look.');
     save(); renderHero(); renderGuide();
   });
   $('gSheet').addEventListener('click', () => { if (!S.hero.spec.trim()) return toast('Describe the character first.'); if (R.running) return toast('Wait for the current run to finish.'); R.sheetOnly = true; $('genSheet').click(); renderGuide(); });
@@ -1465,7 +1628,7 @@ AVOID: a short comma separated list of things that would break this style`;
     const blob = sh && await BBStore.get(sh.key);
     if (!blob) return toast('That sheet is no longer stored.');
     // The chosen sheet is attached in Flow for every slide this character is in, for the whole batch.
-    Object.assign(S.hero, { refImage: await compressImage(await blobToDataURL(blob)), refFrom: sh.key, attach: 'every' });
+    Object.assign(S.hero, { refImage: await compressImage(await blobToDataURL(blob)), refFrom: sh.key, attach: 'every', imageOnly: false, chosen: true });
     save(); renderHero(); renderGuide(); toast('Locked in. This sheet goes into every slide with this character.');
   });
   $('gVo').addEventListener('change', (e) => { const fs = [...e.target.files]; e.target.value = ''; if (fs.length) syncFiles(fs, false); });
@@ -1838,7 +2001,9 @@ async function newVideo() {
   const m = /^(.*?)(\d+)$/.exec(S.batchName || '');
   const nextName = S.slides.length ? (m ? m[1] + (+m[2] + 1) : (S.batchName || 'video') + '_2') : S.batchName;
   Object.assign(S, { slides: [], review: [], sheets: [], cast: [], sheetJob: null, voName: '', voParts: [], batchId: uid(), batchName: nextName });
-  if (String(S.hero.presetId || '').startsWith('cast:')) Object.assign(S.hero, { presetId: 'none', name: '', spec: '', refImage: '', attach: 'off' });
+  if (String(S.hero.presetId || '').startsWith('channel:')) { const c = channelChar(); if (c) setPlays(c, ''); S.hero.playsFor = ''; }
+  else if (String(S.hero.presetId || '').startsWith('cast:')) clearHero(false);
+  R.pick = null; R.peopleAll = false;
   R.voParts = []; R.sheetQueue = []; R.open = null; R.filter = 'all';
   ['gScript', 'mScript', 'gReply'].forEach((id) => { if ($(id)) $(id).value = ''; });
   if ($('batchName')) $('batchName').value = S.batchName;
