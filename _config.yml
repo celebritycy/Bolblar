@@ -1,3 +1,4 @@
 exclude:
   - agent
+  - docs
   - README.md
