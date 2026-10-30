@@ -6,6 +6,15 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 const safeName = (t) => String(t || '').replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, '_').slice(0, 60) || 'batch';
 const IS_OVERLAY = new URLSearchParams(location.search).get('mode') === 'overlay';
+// Shown inside a page, the panel must be Google Flow's own overlay: any other page that frames it (to trick clicks on its
+// buttons) gets an empty frame (security review EXT-05). The side panel is not framed, so this does not apply there.
+const FLOW_ORIGINS = ['https://labs.google', 'https://flow.google.com'];
+const FRAME_PARENT = (() => {
+  if (window.top === window) return '';
+  const a = location.ancestorOrigins, o = a && a.length ? a[0] : '';
+  return IS_OVERLAY && FLOW_ORIGINS.includes(o) ? o : null;
+})();
+if (FRAME_PARENT === null) { document.documentElement.textContent = ''; throw new Error('Bolblar panel: framed outside Google Flow'); }
 const UA = navigator.userAgent;
 const DEVICE = {
   ios: /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1),
@@ -417,7 +426,7 @@ function renderRun() {
   $('newVideo2').hidden = R.running || !n || c.pending > 0 || c.creating > 0;
 
   if (IS_OVERLAY) {
-    try { window.parent.postMessage({ bb: 'progress', text: R.running ? `${c.done}/${n}` : (n && c.done === n ? 'Done' : '') }, '*'); } catch (e) {}
+    try { if (FRAME_PARENT) window.parent.postMessage({ bb: 'progress', text: R.running ? `${c.done}/${n}` : (n && c.done === n ? 'Done' : '') }, FRAME_PARENT); } catch (e) {}
   }
   const list = S.slides.filter((s) => R.filter === 'all' || s.status === R.filter || (R.filter === 'pending' && s.status === 'creating'));
   $('slides').innerHTML = list.map((s) => {
@@ -482,8 +491,10 @@ async function grabImage(src) {
   const r = await send({ type: 'grab', src });
   let blob = null, thumb = '';
   if (r && r.dataUrl) { blob = await (await fetch(r.dataUrl)).blob(); thumb = r.thumb; }
-  else if (r && r.url) { const res = await fetch(r.url); if (res.ok) blob = await res.blob(); }
+  else if (r && r.url && /^https:\/\//.test(r.url)) { const res = await fetch(r.url); if (res.ok) blob = await res.blob(); }
   if (!blob) return null;
+  // Only pictures and videos of a sensible size are kept: whatever the page offers is not saved blindly (security review EXT-06).
+  if (!/^(image|video)\//.test(blob.type || 'image/') || blob.size > 60 * 1024 * 1024) return null;
   if (!thumb) thumb = await makeThumb(blob);
   return { blob, thumb };
 }
@@ -1875,6 +1886,7 @@ function bind() {
   chrome.storage.onChanged.addListener((c) => { if (c.bb_targets && c.bb_targets.newValue && (c.bb_targets.newValue.prompt || c.bb_targets.newValue.submit)) toast('Target locked.'); });
   $('testSubmit').addEventListener('click', async () => {
     if (R.running) return toast('Stop the batch first.');
+    if (!(await gateCheck(false))) return; // a test prompt is a real Flow generation, so it needs an active subscription too
     try { R.useCdp = S.settings.engine === 'precision' && await BBEngine.precisionAllowed() && await BBEngine.attach(); const ok = await typeAndSubmit('A single red apple on a white table, soft daylight.'); toast(ok ? 'Flow accepted the test prompt.' : 'Sent. Check Flow to confirm it started.'); }
     catch (e) { toast(e.message); }
     finally { if (R.useCdp) await BBEngine.detach(); R.useCdp = false; }
@@ -1883,7 +1895,8 @@ function bind() {
 function syncFilters() { document.querySelectorAll('#filters button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.f === R.filter)); }
 
 // Flow's page reports its model, size and x1 to x4 the moment they change.
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (sender.id !== chrome.runtime.id) return; // only this extension (security review EXT-12)
   if (msg && msg.type === 'flow:visibility') {
     // Phones freeze background tabs, so a batch would stall or misfire. Pause and pick up again on return.
     if (!DEVICE.mobile || !R.running) return;
@@ -1938,9 +1951,12 @@ function renderSub() {
   if (!BBLicense.enabled) { $('subStatus').textContent = 'Subscription check is off in this copy (test mode).'; $('subCode').textContent = ''; ['subCopy', 'subManage', 'subSignOut'].forEach((id) => { $(id).hidden = true; }); return; }
   const until = st.until ? new Date(st.until).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '';
   $('subStatus').textContent = st.ok ? `${st.paymentFailed ? "Payment failed: update your card soon. " : st.status === 'cancelling' ? 'Cancelled: ' : 'Active: '}access until ${until}${st.email ? ` (${st.email})` : ''}${st.offline ? '. Offline right now.' : '.'}` : 'Not active.';
-  $('subCode').textContent = st.code || '';
+  // The access code is the key to the subscription: shown masked, copied in full (security review EXT-03).
+  $('subCode').textContent = st.code ? `••••${String(st.code).slice(-4)}` : '';
+  $('subCode').dataset.full = st.code || '';
   $('subCopy').hidden = !st.code; $('subSignOut').hidden = !st.code; $('subManage').hidden = !st.canManage;
-  $('subTelegram').hidden = !st.telegram; if (st.telegram) $('subTelegram').href = st.telegram;
+  const tg = BBLicense.safeLink('telegram', st.telegram);
+  $('subTelegram').hidden = !tg; if (tg) $('subTelegram').href = tg;
 }
 function bindGate() {
   const msg = (t, reason) => { $('gateMsg').textContent = t; $('gateSwap').hidden = reason !== 'devices'; };
@@ -1948,7 +1964,7 @@ function bindGate() {
     const email = $('gateEmail').value.trim(); msg('');
     try {
       const r = await BBLicense.subscribe(email, () => { $('gateSub').hidden = true; $('gateWait').hidden = false; });
-      if (r.ok) { unlocked(r); toast(`Unlocked. Your access code is ${r.code}. It's also in Settings.`); }
+      if (r.ok) { unlocked(r); toast('Unlocked. Your access code is in Settings, with a Copy button. Keep it private.'); }
       else { $('gateSub').hidden = false; $('gateWait').hidden = true; msg(GATE_MSG[r.reason] || GATE_MSG.server); }
     } catch (e) { $('gateSub').hidden = false; $('gateWait').hidden = true; msg(GATE_MSG.offline); }
   });
@@ -1969,7 +1985,7 @@ function bindGate() {
   });
   $('gateCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('gateUnlock').click(); });
   try { const sup = (typeof BB_LICENSE_CONFIG !== 'undefined' && BB_LICENSE_CONFIG.support) || ''; if (sup) $('gateHelp').href = sup; } catch (e) {}
-  $('subCopy').addEventListener('click', async () => { await navigator.clipboard.writeText($('subCode').textContent).catch(() => {}); toast('Code copied.'); });
+  $('subCopy').addEventListener('click', async () => { await navigator.clipboard.writeText($('subCode').dataset.full || '').catch(() => {}); toast('Code copied.'); });
   $('subManage').addEventListener('click', async () => { try { const r = await BBLicense.manage(); if (!r.ok) toast('Could not open the subscription page. Try again later.'); } catch (e) { toast(GATE_MSG.offline); } });
   $('subSignOut').addEventListener('click', async () => {
     if (R.running) return toast('Stop the batch first.');
@@ -1984,7 +2000,7 @@ async function checkUpdate() {
   const bar = $('updateBar');
   bar.hidden = !u;
   document.body.classList.toggle('hasUpdate', !!u);
-  if (u) { bar.href = u.link; bar.title = `Version ${u.latest} is ready`; }
+  if (u) { bar.href = u.link; bar.title = `Version ${u.latest} is ready${u.sha256 ? `. SHA-256 of the zip: ${u.sha256}` : ''}`; }
 }
 
 // Start a new video: clears this script, its shot list, characters, voiceover and images.

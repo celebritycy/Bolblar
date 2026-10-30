@@ -1,8 +1,17 @@
 // Bolblar subscription check. The agent works only with an active access code, on at most 2 devices.
-// It checks with the Bolblar server when it opens and once a day; offline it keeps working for up to 3 days.
+// It checks with the Bolblar server when it opens and once a day; offline it keeps working for up to 3 days after the
+// last successful check, whatever date is stored (security review EXT-01).
 const BBLicense = (() => {
   const API = (typeof BB_LICENSE_CONFIG !== 'undefined' && BB_LICENSE_CONFIG.api) || '';
-  const DAY = 86400000;
+  const DAY = 86400000, OFFLINE_MAX = 3 * DAY;
+  // Addresses the server hands out are opened only on the sites they belong to (security review EXT-08, SITE-08).
+  const ALLOWED = {
+    checkout: /^https:\/\/(checkout\.paystack\.com|paystack\.com|[a-z0-9-]+\.paystack\.com)\//i,
+    manage: /^https:\/\/([a-z0-9-]+\.)?paystack\.com\//i,
+    update: /^https:\/\/(github\.com\/celebritycy\/bolblar\/releases\/|bolblar\.com\/|www\.bolblar\.com\/)/i,
+    telegram: /^https:\/\/t\.me\//i,
+  };
+  const safeLink = (kind, url) => (typeof url === 'string' && ALLOWED[kind].test(url) ? url : '');
   const get = (k) => new Promise((ok) => chrome.storage.local.get([k], (r) => ok(r[k])));
   const set = (k, v) => chrome.storage.local.set({ [k]: v });
   let state = null;
@@ -19,7 +28,7 @@ const BBLicense = (() => {
     return `${br} on ${os}`;
   }
   async function call(action, body = {}) {
-    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...body }) });
+    const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ...body }), signal: AbortSignal.timeout(15000) });
     const j = await res.json().catch(() => ({ ok: false, reason: 'server' }));
     if (res.status >= 500) throw new Error('server');
     return j;
@@ -31,7 +40,7 @@ const BBLicense = (() => {
     const saved = (await get('bb_license')) || {};
     const now = Date.now();
     if (!saved.code) return (state = { ok: false, reason: 'none' });
-    const fresh = saved.ok && saved.checkedAt && now - saved.checkedAt < DAY && now < new Date(saved.checkAgainBy || 0).getTime();
+    const fresh = saved.ok && saved.checkedAt && now - saved.checkedAt < DAY && now - saved.checkedAt >= 0 && now < new Date(saved.checkAgainBy || 0).getTime();
     if (fresh && !force) return (state = saved);
     try {
       const r = await call('license', { code: saved.code, device_id: await deviceId(), label: deviceLabel() });
@@ -39,8 +48,10 @@ const BBLicense = (() => {
       await set('bb_license', state);
       return state;
     } catch (e) {
-      // No internet or the server is down: keep working until the last "check again by" date.
-      if (saved.ok && now < new Date(saved.checkAgainBy || 0).getTime()) return (state = { ...saved, offline: true });
+      // No internet or the server is down: keep working until the last "check again by" date, and never more than 3 days
+      // after the last check that the server answered.
+      const lastOk = Number(saved.checkedAt) || 0;
+      if (saved.ok && now < new Date(saved.checkAgainBy || 0).getTime() && now - lastOk >= 0 && now - lastOk < OFFLINE_MAX) return (state = { ...saved, offline: true });
       return (state = { ok: false, reason: 'offline', code: saved.code });
     }
   }
@@ -68,8 +79,10 @@ const BBLicense = (() => {
   async function subscribe(email, onWaiting) {
     const r = await call('start', { email });
     if (!r.ok) return r;
+    const url = safeLink('checkout', r.url);
+    if (!url) return { ok: false, reason: 'server' };
     await set('bb_checkout', { reference: r.reference, at: Date.now() });
-    chrome.tabs.create({ url: r.url });
+    chrome.tabs.create({ url });
     if (onWaiting) onWaiting();
     return waitForPayment(r.reference);
   }
@@ -88,7 +101,8 @@ const BBLicense = (() => {
   async function manage() {
     const s = (await get('bb_license')) || {};
     const r = await call('manage', { code: s.code });
-    if (r.ok && r.link) chrome.tabs.create({ url: r.link });
+    const link = r.ok ? safeLink('manage', r.link) : '';
+    if (link) chrome.tabs.create({ url: link });
     return r;
   }
   async function resend(email) { return call('resend', { email }); }
@@ -103,7 +117,8 @@ const BBLicense = (() => {
     try {
       const c = await call('config');
       const mine = chrome.runtime.getManifest().version;
-      return c.latest && c.updateLink && newer(c.latest, mine) ? { latest: c.latest, link: c.updateLink } : null;
+      const link = safeLink('update', c.updateLink);
+      return c.latest && link && newer(c.latest, mine) ? { latest: c.latest, link, sha256: /^[0-9a-f]{64}$/i.test(c.sha256 || '') ? c.sha256 : '' } : null;
     } catch (e) { return null; }
   }
   function newer(a, b) {
@@ -113,5 +128,5 @@ const BBLicense = (() => {
   }
   async function price() { if (!API) return ''; try { return (await call('config')).price || ''; } catch (e) { return ''; } }
 
-  return { enabled: !!API, check, activate, swap, subscribe, waitForPayment, pendingCheckout, manage, resend, signOut, price, update, newer, current: () => state };
+  return { enabled: !!API, safeLink, check, activate, swap, subscribe, waitForPayment, pendingCheckout, manage, resend, signOut, price, update, newer, current: () => state };
 })();

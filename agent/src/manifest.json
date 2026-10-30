@@ -8,7 +8,6 @@
     "storage",
     "unlimitedStorage",
     "downloads",
-    "tabs",
     "scripting",
     "sidePanel",
     "debugger"
@@ -56,9 +55,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "panel/*",
-        "lib/*",
-        "icons/*"
+        "panel/panel.html"
       ],
       "matches": [
         "https://labs.google/*",

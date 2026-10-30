@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bolblar Agent — Videos made for you</title>
   <meta name="description" content="Bolblar Agent turns a short brief into a finished video. Watch videos it made, then download the agent.">
+  <!-- GitHub Pages cannot send security headers, so the page sets its own policy: nothing but this site, Google Fonts and
+       Telegram links (security review SITE-11). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; script-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:title" content="Bolblar Agent">
+  <meta property="og:description" content="Bolblar Agent turns a short brief into a finished video. Watch videos it made, then download the agent.">
+  <meta property="og:image" content="https://bolblar.com/assets/videos/video-4.jpg">
+  <meta property="og:url" content="https://bolblar.com/">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,12 +73,13 @@
     .card video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; }
 
     footer { padding: 24px 0; border-top: 1px solid var(--border); text-align: center; font-size: 14px; color: var(--muted); }
+    footer a { color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <a class="brand" href="#"><img src="assets/favicon.svg" alt=""> Bolblar <span>Agent</span></a>
+      <a class="brand" href="/"><img src="assets/favicon.svg" alt=""> Bolblar <span>Agent</span></a>
       <a class="btn btn--small" href="https://t.me/+sOWs1XlVckBlNTE0" target="_blank" rel="noopener">Download</a>
     </header>
   </div>
@@ -78,7 +88,7 @@
     <h1>Describe a video.<br><span class="accent">The agent makes it.</span></h1>
     <p class="lead">Bolblar Agent rewrites the script based on your animation style and character consistency, then generates the visuals automatically without you sleeping on Flow.</p>
 
-    <p class="price"><strong>₦5,000 <span>/</span> $3.50</strong>Get Bolblar Agent</p>
+    <p class="price"><strong>₦5,000 <span>/ month</span></strong>About $3.50 a month, billed by Paystack. Cancel any time.</p>
 
     <a class="btn" href="https://t.me/+sOWs1XlVckBlNTE0" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>
@@ -121,7 +131,7 @@
     </section>
   </main>
 
-  <footer>© 2026 Bolblar</footer>
+  <footer>© 2026 Bolblar · <a href="privacy.html">Privacy</a></footer>
 
 </body>
 </html>

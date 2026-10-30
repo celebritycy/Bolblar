@@ -33,7 +33,8 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (sender.id !== chrome.runtime.id) return; // only this extension (security review EXT-12)
   if (msg && msg.type === 'bg:openFlow') {
     chrome.tabs.create({ url: FLOW_URL }).then(() => reply({ ok: true }));
     return true;

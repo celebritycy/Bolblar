@@ -472,3 +472,39 @@ Each item either closes a finding above or confirms it.
 - The live endpoint was touched read only: OPTIONS, `config`, and one `license` call with an invalid code. No `start`, `resend`, `claim`, `swap`, `manage` or `release` call was made. The attack chains in section 1 were not executed.
 - The Edge Function's code, the Supabase schema, the Paystack configuration and the Telegram group's settings were not available. Every statement about them is an inference from the client, and section 9 lists what to confirm.
 - Severity follows the same scale as the TubBlast review, with "High" here including revenue loss at scale for a paid product and a supply chain path to every buyer.
+
+---
+
+## 11. Fix status (2026-10-30)
+
+What was done about each finding in this repository. The licence server (the Supabase Edge Function) is not in this repository, so the findings that live there are listed as server work, with the checklist in section 9. The extension was checked in Chromium after the changes: the side panel runs without errors, the panel works inside a Google Flow page, and another site can no longer load it. Two builds of the same commit now give the same zip.
+
+| ID | Status | What changed |
+|---|---|---|
+| EXT-01 | Partly fixed | Offline use stops 3 days after the last check the server answered, whatever date is stored; the test prompt needs an active subscription. A buyer who edits their own copy can still remove the check: only the server can stop that (section 9). |
+| EXT-02 | Server work | The device limit needs the server to rotate the device token on each check. |
+| EXT-03 | Fixed in the extension | The code is shown masked (copied in full) and no longer appears in a toast. Asking for the email as well, for swap and manage, is server work. |
+| EXT-04 | Not changed | The debugger permission is how precision mode types; trying the standard engine first is a product change to test on Flow. |
+| EXT-05 | Fixed | Only the panel page is exposed to Google's pages; the panel refuses to run when framed by anything but Google Flow's overlay; progress messages go only to the Flow page. |
+| EXT-06 | Fixed | Only pictures and videos up to 60 MB from https addresses are kept. |
+| EXT-07 | Fixed | PDF import runs with isEvalSupported off, which closes CVE-2024-4367 in this pdf.js. Upgrading pdf.js is still worth doing. |
+| EXT-08 | Fixed | Links from the server open only on Paystack, t.me, github.com/celebritycy/bolblar/releases or bolblar.com; the update bar can show a SHA-256. |
+| EXT-09 | Fixed | Fixed obfuscator seed and no dated folder entries: the same commit builds the same zip. |
+| EXT-10 | Fixed | The tabs permission is gone; host permissions cover every tab the extension reads. Checked on Chromium; Kiwi and Mises were not available to test. |
+| EXT-11 | Not changed | Narrowing the Google image hosts needs the real list from Flow. |
+| EXT-12 | Fixed | Every message listener checks that the sender is this extension; grab accepts only picture addresses. |
+| EXT-13 | No change | Information only. |
+| EXT-14 | Partly fixed | Licence calls time out after 15 seconds. Removing the old tabbed UI and splitting panel.js are refactors left for later. |
+| SITE-01 | Server work | Allow only the extension's origin, rate limit every action (section 9). |
+| SITE-02 | Server work | Same answer for known and unknown emails, limits on start and resend. |
+| SITE-03 | Server work, extension part done | Longer codes or the email as a second factor; the extension now masks the code. |
+| SITE-04 | Server work | claim must wait for a verified Paystack webhook. |
+| SITE-05 | Partly fixed | Every release gets a .sha256 file and the build is reproducible; the README explains how buyers check a zip. Making the Telegram group admin only for files, and an unlisted Chrome Web Store listing, are Cy's settings. |
+| SITE-06 | Partly fixed | Read only token except the upload job, actions pinned by commit, a release environment, no silent replacing of a published zip. Add yourself as the environment's required reviewer and a tag rule in GitHub settings. |
+| SITE-07 | Not changed | Cy's choice: make this repository private, or ship the readable build. |
+| SITE-08 | Fixed | See EXT-08. |
+| SITE-09 | Server work | Move admin actions to a separate function and rotate the key. |
+| SITE-10 | Partly fixed | The page says "₦5,000 / month, billed by Paystack, cancel any time" and links a privacy page written from what the code does. Terms and a refund policy need Cy's decisions. |
+| SITE-11 | Fixed | A page security policy, a referrer policy and preview tags. The font still comes from Google Fonts. |
+| SITE-12 | Cy's action | Turn off sharing on the two old Google Drive links. |
+| SITE-13 | No change | The secret scan was clean. |

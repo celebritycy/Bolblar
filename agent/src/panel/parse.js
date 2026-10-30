@@ -148,7 +148,8 @@ function bbSlidesFromText(text) {
 
 async function bbTextFromPDF(buf) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/pdf.worker.min.js');
-  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  // isEvalSupported: false closes CVE-2024-4367 (code in a PDF's fonts) in this pdf.js 3.11, on top of the extension's CSP.
+  const pdf = await pdfjsLib.getDocument({ data: buf, isEvalSupported: false }).promise;
   let out = '';
   for (let p = 1; p <= pdf.numPages; p++) {
     const tc = await (await pdf.getPage(p)).getTextContent();

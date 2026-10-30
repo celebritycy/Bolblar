@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · Bolblar Agent</title>
+  <meta name="description" content="What the Bolblar Agent browser extension collects, why, and who processes it.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0d0d0d; --surface: #1a1a1a; --border: #2e2e2e; --text: #ffffff; --muted: #a3a3a3; --yellow: #ffd600; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 48px; }
+    a { color: var(--yellow); }
+    h1 { font-size: 30px; line-height: 1.2; margin: 24px 0 6px; }
+    h2 { font-size: 19px; margin: 32px 0 8px; }
+    p, li { color: #e5e5e5; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .brand { color: var(--text); text-decoration: none; font-weight: 800; }
+    .brand span { color: var(--yellow); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="brand" href="/">Bolblar <span>Agent</span></a>
+    <h1>Privacy</h1>
+    <p class="muted">Last updated 30 October 2026</p>
+
+    <p>Bolblar Agent is a browser extension that helps you make the visuals for a video in Google Flow. This page says what it collects, why, and who handles it.</p>
+
+    <h2>What the extension sends to us</h2>
+    <ul>
+      <li><b>Your email address</b>, when you subscribe or ask for your access code again, so we can link your payment to your access code and send it to you.</li>
+      <li><b>Your access code</b>, a <b>random device ID</b> made by the extension, and a <b>short device label</b> such as "Chrome on Windows", each time the extension checks your subscription (when it opens and about once a day). This lets the agent work on up to 2 devices and lets you sign out a device you no longer use.</li>
+      <li><b>A payment reference</b>, while it waits for your payment to go through.</li>
+    </ul>
+    <p>We use this only to run your subscription. We do not sell it and we do not use it for advertising.</p>
+
+    <h2>What stays in your browser</h2>
+    <ul>
+      <li>Your script, your shot list, your prompts, your characters and the pictures you add are kept in the extension's own storage on your device. We never receive them.</li>
+      <li>If you add your own Google Gemini API key, it is kept in the extension's storage on your device and sent only to Google, together with your script, to write the shot list and descriptions.</li>
+      <li>The pictures you choose as references are uploaded into your own Google Flow project, which Google keeps as part of that project.</li>
+      <li>Finished pictures and videos are saved to the folder you choose on your device.</li>
+    </ul>
+
+    <h2>Who processes it for us</h2>
+    <ul>
+      <li><b>Supabase</b>: runs the server that checks subscriptions and stores the details listed above.</li>
+      <li><b>Paystack</b>: takes your payment and manages your subscription and card. Paystack's own privacy policy applies to the payment details you give them.</li>
+      <li><b>Google</b>: Google Flow and, if you add a key, the Gemini API, both under your own Google account and Google's terms.</li>
+      <li><b>Telegram</b>: if you write to us there for support or to download the extension.</li>
+    </ul>
+
+    <h2>How long we keep it</h2>
+    <p>We keep your subscription details while you have a subscription. Payment records are kept for as long as the law requires. You can ask us to delete your details at any time.</p>
+
+    <h2>Your choices</h2>
+    <p>You can sign a device out from the extension's Settings, cancel your subscription from Settings (through Paystack), and remove the extension, which deletes everything it kept in your browser. To see, correct or delete what we hold about you, write to us on Telegram at <a href="https://t.me/Therealcoachsteve" rel="noopener" target="_blank">t.me/Therealcoachsteve</a>. Depending on where you live, including under the GDPR, you may also complain to your data protection authority.</p>
+
+    <p class="muted"><a href="/">Back to Bolblar Agent</a></p>
+  </main>
+</body>
+</html>

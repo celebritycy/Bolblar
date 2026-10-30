@@ -56,6 +56,9 @@ const OBFUSCATOR_OPTIONS = {
   debugProtection: false,
   disableConsoleOutput: false,
   unicodeEscapeSequence: false,
+  // A fixed seed makes the same commit build the same zip, so the SHA-256 printed with a release can be checked by anyone
+  // who builds it again (security review EXT-09, SITE-05).
+  seed: 20261030,
 };
 
 const obfuscate = (code, extra = {}) =>
@@ -97,7 +100,7 @@ async function addDir(zip, dir, prefix) {
     const full = path.join(dir, name);
     const rel = prefix ? `${prefix}/${name}` : name;
     if ((await stat(full)).isDirectory()) await addDir(zip, full, rel);
-    else zip.file(rel, await readFile(full), { date: new Date('2020-01-01T00:00:00Z') });
+    else zip.file(rel, await readFile(full), { date: new Date('2020-01-01T00:00:00Z'), createFolders: false }); // no folder entries stamped with today's time
   }
 }
 

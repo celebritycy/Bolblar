@@ -25,6 +25,10 @@ If you add a script to `panel/panel.html`, add it to `PANEL_SCRIPTS` in `build.m
 
 1. Bump `version` in `src/manifest.json`.
 2. Publish a GitHub release tagged `v<version>` (e.g. `v1.0.1`).
-3. The **Release agent** workflow builds the obfuscated zip and attaches it to the release.
+3. The **Release agent** workflow builds the obfuscated zip and attaches it, with a `.sha256` file, to the release. It runs in the `release` environment: in GitHub, Settings, Environments, `release`, add yourself as a required reviewer so nothing reaches buyers without your approval.
+4. Post the zip in the Telegram group yourself (only admins should be able to post files there) and pin the SHA-256 next to it. Buyers can check a zip with `shasum -a 256 Bolblar-Agent-<version>.zip` (Mac or Linux) or `certutil -hashfile Bolblar-Agent-<version>.zip SHA256` (Windows).
+5. To show the update bar in the extension, set the server's `updateLink` to that GitHub release (the extension only opens links on github.com/celebritycy/bolblar/releases or bolblar.com) and, if you like, `sha256` to the checksum.
 
-Obfuscation makes the code hard to read, not impossible to change. The real lock is the server-side licence check.
+The build is reproducible: the obfuscator has a fixed seed and every file has a fixed date, so building the same tag again gives the same zip and the same SHA-256.
+
+Obfuscation makes the code hard to read, not impossible to change, and this repository is public, so the readable source is too. The real lock is the server-side licence check: see docs/security-review-2026-10-29.md, section 9, for what the server must enforce.

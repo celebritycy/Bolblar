@@ -448,6 +448,7 @@
 
   async function grab(src) {
     try {
+      if (!/^(https:|blob:|data:image\/)/.test(String(src || ''))) throw new Error('not a picture address');
       const res = await fetch(src, { credentials: 'include' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const blob = await res.blob();
@@ -724,7 +725,8 @@
   setTimeout(pushSettings, 800);
 
   // ---------- messaging ----------
-  chrome.runtime.onMessage.addListener((msg, _s, reply) => {
+  chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+    if (sender.id !== chrome.runtime.id || !msg || typeof msg.type !== 'string') return; // only this extension (security review EXT-12)
     (async () => {
       try {
         switch (msg.type) {
